@@ -27,8 +27,11 @@ class DocumentIngester:
         os.environ.pop('HTTP_PROXY', None)
         os.environ.pop('HTTPS_PROXY', None)
         self.chunk_overlap = chunk_overlap
+        print(30)
         # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
+       
+        print(31)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
@@ -49,6 +52,7 @@ class DocumentIngester:
             raise FileNotFoundError(f"CSV file not found: {file_path}")
         
         try:
+            print(f'the file path {file_path}')
             df = pd.read_csv(file_path)
             print(f"Loaded CSV with {len(df)} rows and columns: {df.columns.tolist()}")
             return df
@@ -171,14 +175,20 @@ class DocumentIngester:
             Chroma vector store containing the document embeddings
         """
         # Default collection name to the CSV filename without extension
+        print(177)
         if collection_name is None:
             collection_name = os.path.splitext(os.path.basename(csv_path))[0]
-        
+        print(180)
         # Load and process the CSV
-        df = self.load_csv(csv_path)
+        #df = self.load_csv(csv_path)
+        df = self.load_csv('test_csv.csv')
+        print(183)
         documents = self.preprocess_dataframe(df, text_column, url_column, title_column)
+        print(185)
         chunked_documents = self.chunk_documents(documents)
+        print(187)
         vector_store = self.create_vector_store(chunked_documents, collection_name)
+        print(189)
         
         return vector_store
 
