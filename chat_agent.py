@@ -242,10 +242,12 @@ class AgentManager:
         
         # For the prototype, we'll use the kizen.csv file regardless of URL
         # In a real system, we would scrape the URL and process the content
+        print('244')
         ingester = DocumentIngester()
-        
+        print('finished')
         try:
             # Process the CSV file (in a real system, this would be content from the URL)
+            print('249')
             vector_store = ingester.process_csv(
                 csv_path="kizen.csv",  # Use the provided CSV for all agents in this prototype
                 text_column="content",
@@ -253,19 +255,19 @@ class AgentManager:
                 title_column="title",
                 collection_name=collection_name
             )
-            
+            print('256')
             # Create the agent
             agent = ChatAgent(
                 agent_name=agent_name or f"Agent for {domain}",
                 collection_name=collection_name
             )
-            
+            print('262')
             # Save the agent configuration
             agent.save(self.agents_directory)
-            
+            print('265')
             # Add to the loaded agents
             self.agents[agent.agent_id] = agent
-            
+            print('268')
             return agent
             
         except Exception as e:
