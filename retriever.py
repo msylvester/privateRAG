@@ -28,6 +28,8 @@ class DocumentRetriever:
             top_k: Number of documents to retrieve
         """
         self.collection_name = collection_name
+        os.environ.pop('HTTP_PROXY', None)
+        os.environ.pop('HTTPS_PROXY', None)
         # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
         self.top_k = top_k

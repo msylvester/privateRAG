@@ -24,6 +24,8 @@ class DocumentIngester:
             chunk_overlap: Overlap between consecutive chunks
         """
         self.chunk_size = chunk_size
+        os.environ.pop('HTTP_PROXY', None)
+        os.environ.pop('HTTPS_PROXY', None)
         self.chunk_overlap = chunk_overlap
         # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
