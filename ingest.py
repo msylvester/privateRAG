@@ -53,7 +53,7 @@ class DocumentIngester:
         
         try:
             print(f'the file path {file_path}')
-            df = pd.read_csv(file_path)
+            df = pd.read_csv(file_path, engine='python', on_bad_lines='skip')
             print(f"Loaded CSV with {len(df)} rows and columns: {df.columns.tolist()}")
             return df
         except Exception as e:
