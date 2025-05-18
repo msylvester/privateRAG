@@ -10,6 +10,7 @@ from typing import List, Dict, Any, Optional
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
+import os
 import uuid
 
 class DocumentIngester:
@@ -24,6 +25,7 @@ class DocumentIngester:
         """
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
+        # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,

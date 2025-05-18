@@ -28,6 +28,7 @@ class DocumentRetriever:
             top_k: Number of documents to retrieve
         """
         self.collection_name = collection_name
+        # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
         self.top_k = top_k
         self.use_compression = use_compression

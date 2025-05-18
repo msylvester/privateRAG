@@ -8,7 +8,7 @@ import argparse
 def get_embedding(text, engine="text-embedding-ada-002"):
     response = openai.Embedding.create(
         input=text,
-        engine=engine
+        model=engine  # Changed from engine to model parameter
     )
     return response["data"][0]["embedding"]
 
