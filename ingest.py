@@ -149,13 +149,13 @@ class DocumentIngester:
             # Try candidate columns in order: "text", "markdown", then "content"
             for col in candidate_text_columns:
                 if col in row.index and not pd.isna(row[col]) and str(row[col]).strip() != "":
-                    doc_text = row[col]
+                    doc_text = str(row[col])
                     break
             # Fallback: if no candidate produced valid text, use the first column
             if not doc_text:
                 first_col = df.columns[0]
                 if not pd.isna(row[first_col]) and str(row[first_col]).strip() != "":
-                    doc_text = row[first_col]
+                    doc_text = str(row[first_col])
                 else:
                     continue
     
@@ -166,7 +166,7 @@ class DocumentIngester:
                 metadata["title"] = row[title_column]
             print(f"✅ Adding row {idx} to documents")
             documents.append({
-                "text": doc_text,
+                "text": str(doc_text),
                 "metadata": metadata
             })
         print(f"\n✅ Total valid documents: {len(documents)}")
