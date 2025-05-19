@@ -203,19 +203,15 @@ class DocumentIngester:
         #             })
         #         didPrint = False 
         for doc in documents:
-        
-            
-            text_chunks = self.text_splitter.split_text(doc["text"])
-          
-      
+            text = str(doc["text"])
+            text_chunks = self.text_splitter.split_text(text)
             for chunk in text_chunks:
                 # Create a copy of the metadata to avoid modifying the original
                 chunk_metadata = doc["metadata"].copy()
                 # Add a unique chunk ID
                 chunk_metadata["chunk_id"] = str(uuid.uuid4())
-                
                 chunked_documents.append({
-                    "text": chunk
+                    "text": chunk,
                     "metadata": chunk_metadata
                 })
     
