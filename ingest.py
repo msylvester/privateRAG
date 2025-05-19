@@ -184,10 +184,30 @@ class DocumentIngester:
         """
         chunked_documents = []
         print(f'about to print docs')
+        didPrint = False 
+        # for doc in documents:
+        #     while (not didPrint): 
+        #         print(190)
+        #         text_chunks = self.text_splitter.split_text(doc["text"])
+        #         print(192)
+        #         didPrint = True
+        #         for chunk in text_chunks:
+        #             # Create a copy of the metadata to avoid modifying the original
+        #             chunk_metadata = doc["metadata"].copy()
+        #             # Add a unique chunk ID
+        #             chunk_metadata["chunk_id"] = str(uuid.uuid4())
+                    
+        #             chunked_documents.append({
+        #                 "text": chunk,
+        #                 "metadata": chunk_metadata
+        #             })
+        #         didPrint = False 
         for doc in documents:
-            print(f'the doc is {doc}')
-            text_chunks = self.text_splitter.split_text(doc["text"])
+        
             
+            text_chunks = self.text_splitter.split_text(doc["text"])
+          
+      
             for chunk in text_chunks:
                 # Create a copy of the metadata to avoid modifying the original
                 chunk_metadata = doc["metadata"].copy()
@@ -195,10 +215,10 @@ class DocumentIngester:
                 chunk_metadata["chunk_id"] = str(uuid.uuid4())
                 
                 chunked_documents.append({
-                    "text": chunk,
+                    "text": chunk
                     "metadata": chunk_metadata
                 })
-        
+    
         print(f"Created {len(chunked_documents)} chunks from {len(documents)} documents")
         return chunked_documents
     
