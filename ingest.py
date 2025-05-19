@@ -259,9 +259,9 @@ class DocumentIngester:
         print(f'the collection is {collection_name}')
     
         vector_store = Chroma.from_texts(
-            texts=texts[0],
+            texts=texts,
             embedding=self.embedding_model,
-            metadatas=metadatas[0],
+            metadatas=metadatas,
             persist_directory=persist_directory,
             collection_name=collection_name
         )
