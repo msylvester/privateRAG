@@ -53,48 +53,130 @@ class DocumentIngester:
         
         try:
             print(f'the file path {file_path}')
-            df = pd.read_csv(file_path, engine='python', on_bad_lines='skip')
+            df = pd.read_csv(file_path, quoting=1, engine='python', on_bad_lines='skip')
             print(f"Loaded CSV with {len(df)} rows and columns: {df.columns.tolist()}")
             return df
         except Exception as e:
             raise Exception(f"Error loading CSV: {str(e)}")
+    # def preprocess_dataframe(self, df: pd.DataFrame,
+    #                        candidate_text_columns: List[str] = ["content", "text", "markdown"],
+    #                        url_column: Optional[str] = None,
+    #                        title_column: Optional[str] = None) -> List[Dict[str, Any]]:
+    #     """
+    #     Preprocess the dataframe into a list of document dictionaries.
+
+    #     Args:
+    #         df: DataFrame containing the data
+    #         candidate_text_columns: List of column names to check for text content
+    #         url_column: Optional name of the column containing URLs
+    #         title_column: Optional name of the column containing titles
+
+    #     Returns:
+    #         List of document dictionaries with text and metadata
+    #     """
+    #     documents = []
+
+    #     for idx, row in df.iterrows():
+    #         doc_text = None
+    #         # Search for the first candidate column with non-empty text
+    #         for col in candidate_text_columns:
+    #             if col in row and not pd.isna(row[col]) and row[col] != "":
+    #                 doc_text = row[col]
+    #                 break
+    #         if not doc_text:
+    #             continue
+
+    #         metadata = {"source_idx": idx}
+    #         if url_column and url_column in row and not pd.isna(row[url_column]):
+    #             metadata["url"] = row[url_column]
+    #         if title_column and title_column in row and not pd.isna(row[title_column]):
+    #             metadata["title"] = row[title_column]
+
+    #         documents.append({
+    #             "text": doc_text,
+    #             "metadata": metadata
+    #         })
+
+    #     return documents   
     
+    # def preprocess_dataframe(self, df: pd.DataFrame, text_column: str, 
+    #                          url_column: Optional[str] = None,
+    #                          title_column: Optional[str] = None) -> List[Dict[str, Any]]:
+    #     """
+    #     Preprocess the dataframe into a list of document dictionaries.
+        
+    #     Args:
+    #         df: DataFrame containing the data
+    #         text_column: Name of the column containing the text content
+    #         url_column: Optional name of the column containing URLs
+    #         title_column: Optional name of the column containing titles
+            
+    #     Returns:
+    #         List of document dictionaries with text and metadata
+    #     """
+    #     documents = []
+        
+    #     for idx, row in df.iterrows():
+    #         if text_column not in row or pd.isna(row[text_column]) or row[text_column] == "":
+    #             continue
+                
+    #         metadata = {"source_idx": idx}
+            
+    #         if url_column and url_column in row and not pd.isna(row[url_column]):
+    #             metadata["url"] = row[url_column]
+                
+    #         if title_column and title_column in row and not pd.isna(row[title_column]):
+    #             metadata["metadata/title"] = row[title_column]
+            
+    #         documents.append({
+    #             "text": row[text_column],
+    #             "metadata": metadata
+    #         })
+    #     print (f'the documents are {len(documents)}')
+    #     return documents
     def preprocess_dataframe(self, df: pd.DataFrame, text_column: str, 
-                             url_column: Optional[str] = None,
-                             title_column: Optional[str] = None) -> List[Dict[str, Any]]:
+                            url_column: Optional[str] = None,
+                            title_column: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Preprocess the dataframe into a list of document dictionaries.
-        
-        Args:
-            df: DataFrame containing the data
-            text_column: Name of the column containing the text content
-            url_column: Optional name of the column containing URLs
-            title_column: Optional name of the column containing titles
-            
-        Returns:
-            List of document dictionaries with text and metadata
         """
         documents = []
-        
+
+        print(f"Total rows in DataFrame: {len(df)}")
+        print(f"Available columns: {df.columns.tolist()}")
+
         for idx, row in df.iterrows():
-            if text_column not in row or pd.isna(row[text_column]) or row[text_column] == "":
+            print(f"\nProcessing row {idx}...")
+
+            if text_column not in row.index:
+                print(f"❌ Skipping row {idx}: '{text_column}' not in row index: {row.index.tolist()}")
                 continue
-                
+
+            if pd.isna(row[text_column]):
+                print(f"❌ Skipping row {idx}: '{text_column}' is NaN")
+                continue
+
+            if row[text_column] == "":
+                print(f"❌ Skipping row {idx}: '{text_column}' is empty string")
+                continue
+
             metadata = {"source_idx": idx}
-            
-            if url_column and url_column in row and not pd.isna(row[url_column]):
+
+            if url_column and url_column in row.index and not pd.isna(row[url_column]):
                 metadata["url"] = row[url_column]
-                
-            if title_column and title_column in row and not pd.isna(row[title_column]):
-                metadata["title"] = row[title_column]
-            
+
+            if title_column and title_column in row.index and not pd.isna(row[title_column]):
+                metadata["metadata/title"] = row[title_column]
+
+            print(f"✅ Adding row {idx} to documents")
             documents.append({
                 "text": row[text_column],
                 "metadata": metadata
             })
-        
+
+        print(f"\n✅ Total valid documents: {len(documents)}")
         return documents
-    
+
     def chunk_documents(self, documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         """
         Split documents into chunks for better retrieval.
@@ -106,8 +188,9 @@ class DocumentIngester:
             List of chunked document dictionaries
         """
         chunked_documents = []
-        
+        print(f'about to print docs')
         for doc in documents:
+            print(f'the doc is {doc}')
             text_chunks = self.text_splitter.split_text(doc["text"])
             
             for chunk in text_chunks:
@@ -136,13 +219,33 @@ class DocumentIngester:
         Returns:
             Chroma vector store containing the document embeddings
         """
+        print(139)
         texts = [doc["text"] for doc in chunked_documents]
+        print(141)
         metadatas = [doc["metadata"] for doc in chunked_documents]
+        print(142)
         
         # Create a persistent Chroma vector store
         persist_directory = f"./data/chroma/{collection_name}"
+        print(147)
         os.makedirs(persist_directory, exist_ok=True)
-        
+        print(149)
+        print(f'texts {texts}')
+        print(f'metadataas {metadatas}')
+        print(f'the collections is {collection_name}')
+        print(f'the persists directiry is {persist_directory}')
+        # texts = [
+        #     "The quick brown fox jumps over the lazy dog.",
+        #     "Artificial intelligence is transforming the world.",
+        #     "Python is a versatile programming language."
+        # ]
+
+        # metadatas = [
+        #     {"source": "sentence_1.txt", "author": "Author A"},
+        #     {"source": "sentence_2.txt", "author": "Author B"},
+        #     {"source": "sentence_3.txt", "author": "Author C"},
+        # ]
+
         vector_store = Chroma.from_texts(
             texts=texts,
             embedding=self.embedding_model,
@@ -150,7 +253,7 @@ class DocumentIngester:
             persist_directory=persist_directory,
             collection_name=collection_name
         )
-        
+        print(157)
         # Persist the vector store to disk
         vector_store.persist()
         
@@ -180,11 +283,11 @@ class DocumentIngester:
             collection_name = os.path.splitext(os.path.basename(csv_path))[0]
         print(180)
         # Load and process the CSV
-        #df = self.load_csv(csv_path)
-        df = self.load_csv('test_csv.csv')
+        df = self.load_csv(csv_path)
+        #df = self.load_csv('test_csv.csv')
         print(183)
         documents = self.preprocess_dataframe(df, text_column, url_column, title_column)
-        print(185)
+        print(f'the documents are {len(documents)}')
         chunked_documents = self.chunk_documents(documents)
         print(187)
         vector_store = self.create_vector_store(chunked_documents, collection_name)
@@ -200,9 +303,9 @@ if __name__ == "__main__":
     # Process a small example CSV file
     vector_store = ingester.process_csv(
         csv_path="kizen_ex.csv",
-        text_column="content",
+        text_column="text",
         url_column="url",
-        title_column="title"
+        title_column="metadata/title"
     )
     
     print(f"Vector store created with {vector_store._collection.count()} documents")
