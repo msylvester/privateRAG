@@ -241,10 +241,8 @@ class DocumentIngester:
         print(147)
         os.makedirs(persist_directory, exist_ok=True)
         print(149)
-        print(f'texts {texts}')
-        print(f'metadataas {metadatas}')
-        print(f'the collections is {collection_name}')
-        print(f'the persists directiry is {persist_directory}')
+      
+       
         # texts = [
         #     "The quick brown fox jumps over the lazy dog.",
         #     "Artificial intelligence is transforming the world.",
