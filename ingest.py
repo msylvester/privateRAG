@@ -134,46 +134,41 @@ class DocumentIngester:
     #         })
     #     print (f'the documents are {len(documents)}')
     #     return documents
-    def preprocess_dataframe(self, df: pd.DataFrame, text_column: str, 
+    def preprocess_dataframe(self, df: pd.DataFrame, candidate_text_columns: List[str] = ["text", "markdown", "content"],
                             url_column: Optional[str] = None,
                             title_column: Optional[str] = None) -> List[Dict[str, Any]]:
         """
         Preprocess the dataframe into a list of document dictionaries.
         """
         documents = []
-
         print(f"Total rows in DataFrame: {len(df)}")
         print(f"Available columns: {df.columns.tolist()}")
-
+    
         for idx, row in df.iterrows():
-            print(f"\nProcessing row {idx}...")
-
-            if text_column not in row.index:
-                print(f"❌ Skipping row {idx}: '{text_column}' not in row index: {row.index.tolist()}")
-                continue
-
-            if pd.isna(row[text_column]):
-                print(f"❌ Skipping row {idx}: '{text_column}' is NaN")
-                continue
-
-            if row[text_column] == "":
-                print(f"❌ Skipping row {idx}: '{text_column}' is empty string")
-                continue
-
+            doc_text = None
+            # Try candidate columns in order: "text", "markdown", then "content"
+            for col in candidate_text_columns:
+                if col in row.index and not pd.isna(row[col]) and str(row[col]).strip() != "":
+                    doc_text = row[col]
+                    break
+            # Fallback: if no candidate produced valid text, use the first column
+            if not doc_text:
+                first_col = df.columns[0]
+                if not pd.isna(row[first_col]) and str(row[first_col]).strip() != "":
+                    doc_text = row[first_col]
+                else:
+                    continue
+    
             metadata = {"source_idx": idx}
-
             if url_column and url_column in row.index and not pd.isna(row[url_column]):
                 metadata["url"] = row[url_column]
-
             if title_column and title_column in row.index and not pd.isna(row[title_column]):
-                metadata["metadata/title"] = row[title_column]
-
+                metadata["title"] = row[title_column]
             print(f"✅ Adding row {idx} to documents")
             documents.append({
-                "text": row[text_column],
+                "text": doc_text,
                 "metadata": metadata
             })
-
         print(f"\n✅ Total valid documents: {len(documents)}")
         return documents
 
@@ -286,7 +281,12 @@ class DocumentIngester:
         df = self.load_csv(csv_path)
         #df = self.load_csv('test_csv.csv')
         print(183)
-        documents = self.preprocess_dataframe(df, text_column, url_column, title_column)
+        documents = self.preprocess_dataframe(
+            df,
+            candidate_text_columns=["text", "markdown", "content"],
+            url_column=url_column,
+            title_column=title_column
+        )
         print(f'the documents are {len(documents)}')
         chunked_documents = self.chunk_documents(documents)
         print(187)
