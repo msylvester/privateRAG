@@ -256,10 +256,12 @@ class DocumentIngester:
         # ]
         print(f'the texts are {texts[0]}')
         print(f'the metadata is {metadatas[0]}')
+        print(f'the collection is {collection_name}')
+    
         vector_store = Chroma.from_texts(
-            texts=texts,
+            texts=texts[0],
             embedding=self.embedding_model,
-            metadatas=metadatas,
+            metadatas=metadatas[0],
             persist_directory=persist_directory,
             collection_name=collection_name
         )
