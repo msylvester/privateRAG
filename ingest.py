@@ -254,7 +254,8 @@ class DocumentIngester:
         #     {"source": "sentence_2.txt", "author": "Author B"},
         #     {"source": "sentence_3.txt", "author": "Author C"},
         # ]
-
+        print(f'the texts are {texts[0]}')
+        print(f'the metadata is {metadatas[0]}')
         vector_store = Chroma.from_texts(
             texts=texts,
             embedding=self.embedding_model,
