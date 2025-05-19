@@ -238,7 +238,7 @@ class AgentManager:
         # Extract domain from URL as a simple way to generate a collection name
         from urllib.parse import urlparse
         domain = urlparse(url).netloc
-        collection_name = f"{domain.replace('.', '_')}_{uuid.uuid4().hex[:8]}"
+        collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
         
         # For the prototype, we'll use the kizen.csv file regardless of URL
         # In a real system, we would scrape the URL and process the content
