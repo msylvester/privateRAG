@@ -27,7 +27,9 @@ class DocumentRetriever:
             compression_llm: LLM to use for compression (if enabled)
             top_k: Number of documents to retrieve
         """
+
         self.collection_name = collection_name
+    
         os.environ.pop('HTTP_PROXY', None)
         os.environ.pop('HTTPS_PROXY', None)
         # Initialize OpenAIEmbeddings without proxies parameter
@@ -73,19 +75,20 @@ class DocumentRetriever:
             )
         else:
             self.retriever = base_retriever
-    
     def retrieve(self, query: str) -> List[Dict[str, Any]]:
         """
         Retrieve relevant documents for a query.
-        
+
         Args:
             query: The search query
-            
+
         Returns:
             List of retrieved documents with text and metadata
         """
-        docs = self.retriever.get_relevant_documents(query)
-        
+        # invoke() is now the recommended method
+   
+        docs = self.retriever.invoke(query)
+
         # Convert to a more usable format
         results = []
         for doc in docs:
@@ -93,8 +96,30 @@ class DocumentRetriever:
                 "text": doc.page_content,
                 "metadata": doc.metadata
             })
-        
+
         return results
+
+    # def retrieve(self, query: str) -> List[Dict[str, Any]]:
+    #     """
+    #     Retrieve relevant documents for a query.
+        
+    #     Args:
+    #         query: The search query
+            
+    #     Returns:
+    #         List of retrieved documents with text and metadata
+    #     """
+    #     docs = self.retriever.get_relevant_documents(query)
+        
+    #     # Convert to a more usable format
+    #     results = []
+    #     for doc in docs:
+    #         results.append({
+    #             "text": doc.page_content,
+    #             "metadata": doc.metadata
+    #         })
+        
+    #     return results
     
     def retrieve_with_scores(self, query: str) -> List[Dict[str, Any]]:
         """

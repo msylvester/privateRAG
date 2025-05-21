@@ -230,17 +230,17 @@ class DocumentIngester:
         Returns:
             Chroma vector store containing the document embeddings
         """
-        print(139)
+        # print(139)
         texts = [doc["text"] for doc in chunked_documents]
-        print(141)
+        # print(141)
         metadatas = [doc["metadata"] for doc in chunked_documents]
-        print(142)
+        # print(142)
         
         # Create a persistent Chroma vector store
         persist_directory = f"./data/chroma/{collection_name}"
-        print(147)
+        # print(147)
         os.makedirs(persist_directory, exist_ok=True)
-        print(149)
+        # print(149)
       
        
         # texts = [
@@ -254,9 +254,9 @@ class DocumentIngester:
         #     {"source": "sentence_2.txt", "author": "Author B"},
         #     {"source": "sentence_3.txt", "author": "Author C"},
         # ]
-        print(f'the texts are {texts[0]}')
-        print(f'the metadata is {metadatas[0]}')
-        print(f'the collection is {collection_name}')
+        # print(f'the texts are {texts[0]}')
+        # print(f'the metadata is {metadatas[0]}')
+        # print(f'the collection is {collection_name}')
     
         vector_store = Chroma.from_texts(
             texts=texts,
@@ -265,11 +265,11 @@ class DocumentIngester:
             persist_directory=persist_directory,
             collection_name=collection_name
         )
-        print(157)
+     
         # Persist the vector store to disk
         vector_store.persist()
         
-        print(f"Created vector store with {len(texts)} documents in collection '{collection_name}'")
+        #print(f"Created vector store with {len(texts)} documents in collection '{collection_name}'")
         return vector_store
     
     def process_csv(self, csv_path: str, text_column: str, 
@@ -290,25 +290,25 @@ class DocumentIngester:
             Chroma vector store containing the document embeddings
         """
         # Default collection name to the CSV filename without extension
-        print(177)
+      
         if collection_name is None:
             collection_name = os.path.splitext(os.path.basename(csv_path))[0]
-        print(180)
+   
         # Load and process the CSV
         df = self.load_csv(csv_path)
         #df = self.load_csv('test_csv.csv')
-        print(183)
+      
         documents = self.preprocess_dataframe(
             df,
             candidate_text_columns=["text", "markdown", "content"],
             url_column=url_column,
             title_column=title_column
         )
-        print(f'the documents are {len(documents)}')
+    
         chunked_documents = self.chunk_documents(documents)
-        print(187)
+    
         vector_store = self.create_vector_store(chunked_documents, collection_name)
-        print(189)
+       
         
         return vector_store
 
