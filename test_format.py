@@ -28,8 +28,6 @@ Answer:
     return chain
 
 def test_invoke(chain):
-    print("Chain input keys:", chain.input_keys)
-    print("Prompt input variables:", getattr(chain.prompt, "input_variables", None))
 
     composed_input = {
         "agent_name": "SupportBot",
@@ -40,9 +38,8 @@ def test_invoke(chain):
 
     try:
         result = chain.invoke(composed_input)
-        print("Invoke result:", result)
     except Exception as e:
-        print("Exception during invoke:", e)
+        pass
 
 def main():
     chain = get_test_chain()

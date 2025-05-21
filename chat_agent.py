@@ -86,8 +86,6 @@ class ChatAgent:
             verbose=False,
             memory=self.memory
         )
-        print(f"Chain expects inputs: {self.chain.input_keys}")
-        print(f"Prompt expects variables: {self.prompt_template.input_variables}")
     
     def _get_context(self, query: str) -> str:
         """
@@ -151,12 +149,9 @@ class ChatAgent:
         context = self._get_context(question)
 
         # Instead of invoking the chain, forge a response
-        print(f"Forging a response for: {question}")
         forged_response = {
             "text": f"This is a forged response from {self.agent_name}. I'm pretending to answer your question about {question}"
         }
-
-        print(f'The response is from: {self.agent_name}')
 
         return {
             "agent_id": self.agent_id,
@@ -331,7 +326,6 @@ class AgentManager:
                 agent_id = filename[:-5]  # Remove .json extension
                 try:
                     self.agents[agent_id] = ChatAgent.load(agent_id, self.agents_directory)
-                    print(f"Loaded agent: {self.agents[agent_id].agent_name} ({agent_id})")
                 except Exception as e:
                     print(f"Error loading agent {agent_id}: {str(e)}")
     

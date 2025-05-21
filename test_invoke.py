@@ -34,20 +34,13 @@ def test_agent_direct_chain_call():
         print(f"Could not load agent with ID: {agent_id_to_load}")
         return
 
-    print(f"\nSelected Agent: {agent.agent_name} (ID: {agent.agent_id})")
     if not agent.chain:
-        print("Agent's chain is not initialized. Cannot proceed.")
         return
-
-    print(f"Agent's chain input keys (expected by invoke): {agent.chain.input_keys}")
-    print(f"Agent's chain memory keys: {agent.chain.memory.memory_key}")
-    print(f"Agent's prompt input variables: {agent.chain.prompt.input_variables}")
 
     # Get test question from user
     question = input("\nEnter a test question: ")
 
     # Perform the query logic locally, calling the agent's chain directly
-    print("\nInvoking agent's chain directly...")
     try:
         # 1. Get context
         context = agent._get_context(question)
@@ -64,21 +57,9 @@ def test_agent_direct_chain_call():
     }
 
 
-        print(f"Inputs provided to agent.chain.invoke: {inputs_for_chain}")
-        # Add this after loading the agent but before invoking the chain
-        print("\nDiagnosing chain input requirements:")
-        print(f"Chain input keys: {agent.chain.input_keys}")
-        if hasattr(agent.chain, 'input_schema'):
-            print(f"Chain input schema: {agent.chain.input_schema.model_json_schema()}")
-        if hasattr(agent.chain.prompt, 'input_variables'):
-            print(f"Prompt input variables: {agent.chain.prompt.input_variables}")
-        if hasattr(agent.chain, 'memory') and agent.chain.memory:
-            print(f"Memory keys: {agent.chain.memory.memory_key}")
-            print(f"Memory output key: {getattr(agent.chain.memory, 'return_messages', False)}")
 
 
         # Instead of invoking the chain, forge a response
-        print("Forging a random response instead of invoking the chain...")
         response_payload = {
             "text": f"This is a forged response from test_invoke.py. I'm pretending to answer your question about {question}"
         }
@@ -98,7 +79,6 @@ def test_agent_direct_chain_call():
         }
 
     except Exception as e:
-        print(f"Exception occurred during direct chain invocation: {e}")
         import traceback
         traceback.print_exc()
         response = {
@@ -109,10 +89,6 @@ def test_agent_direct_chain_call():
             "has_context": False # Or determine based on context if available
         }
 
-    # Print the response
-    print(f"\nQuestion: {response['question']}")
-    print(f"Answer: {response['answer']}")
-    print(f"Has context: {response['has_context']}")
 
 def main():
     test_agent_direct_chain_call()
