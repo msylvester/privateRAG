@@ -56,12 +56,26 @@ def test_agent_direct_chain_call():
         # LLMChain with memory expects input keys NOT part of memory.
         # 'chat_history' is in memory_keys, so it should be excluded from inputs to invoke.
         inputs_for_chain = {
+        "input": {
             "agent_name": agent.agent_name,
             "context": context,
-            "question": question,
+            "question": question
         }
+    }
+
 
         print(f"Inputs provided to agent.chain.invoke: {inputs_for_chain}")
+        # Add this after loading the agent but before invoking the chain
+        print("\nDiagnosing chain input requirements:")
+        print(f"Chain input keys: {agent.chain.input_keys}")
+        if hasattr(agent.chain, 'input_schema'):
+            print(f"Chain input schema: {agent.chain.input_schema.model_json_schema()}")
+        if hasattr(agent.chain.prompt, 'input_variables'):
+            print(f"Prompt input variables: {agent.chain.prompt.input_variables}")
+        if hasattr(agent.chain, 'memory') and agent.chain.memory:
+            print(f"Memory keys: {agent.chain.memory.memory_key}")
+            print(f"Memory output key: {getattr(agent.chain.memory, 'return_messages', False)}")
+
 
         # 3. Invoke the chain
         response_payload = agent.chain.invoke(inputs_for_chain)
