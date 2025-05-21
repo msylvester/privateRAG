@@ -14,7 +14,7 @@ from chat_agent import ChatAgent, AgentManager
 
 # Set up the page
 st.set_page_config(
-    page_title="Kizen RAG Chat System",
+    page_title="RAG Chat System",
     page_icon="🤖",
     layout="wide"
 )
@@ -32,6 +32,7 @@ if "current_agent_id" not in st.session_state:
 # Function to create a new agent
 def create_new_agent(url: str, agent_name: str) -> None:
     """Create a new agent from a URL."""
+    print('about to with')
     with st.spinner("Creating agent... This may take a while as we process the documentation."):
         try:
             agent = st.session_state.agent_manager.create_agent(url, agent_name)
@@ -46,19 +47,22 @@ def send_message(agent_id: str, message: str) -> None:
     """Send a message to an agent and get a response."""
     if not message.strip():
         return
-    
+    print(f'inside send message on line 50') 
     # Add user message to chat history
     st.session_state.chat_history[agent_id].append({"role": "user", "content": message})
-    
+    print(53)
     # Get the agent
     agent = st.session_state.agent_manager.get_agent(agent_id)
-    
+    print(56)
     # Get response from agent
     with st.spinner("Thinking..."):
         try:
+            print(57)
             response = agent.query(message)
+            print(61)
             st.session_state.chat_history[agent_id].append({"role": "assistant", "content": response["answer"]})
         except Exception as e:
+            print(65)
             st.error(f"Error getting response: {str(e)}")
             st.session_state.chat_history[agent_id].append({"role": "assistant", "content": f"Error: {str(e)}"})
 
@@ -86,7 +90,7 @@ def delete_agent(agent_id: str) -> None:
         st.error("Failed to delete agent.")
 
 # Main layout
-st.title("Kizen RAG Chat System")
+st.title("RAG Chat System")
 
 # Sidebar for agent management
 with st.sidebar:
@@ -99,6 +103,7 @@ with st.sidebar:
         
         if st.button("Create Agent"):
             if new_agent_url and new_agent_name:
+             
                 create_new_agent(new_agent_url, new_agent_name)
             else:
                 st.warning("Please provide both a URL and a name for the agent.")
@@ -144,7 +149,8 @@ if st.session_state.current_agent_id:
     
     # Input for new message
     user_input = st.text_input("Your message:", key="user_input")
-    if st.button("Send") or (user_input and user_input != ""):
+
+    if st.button("Send"):
         send_message(agent.agent_id, user_input)
         st.rerun()  # Refresh to show the new messages
 else:
