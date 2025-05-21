@@ -50,6 +50,17 @@ pip install -r requirements.txt
 export OPENAI_API_KEY=your-api-key
 ```
 
+### Cleaning the Data 
+The project has a python script to clean the data. 
+```
+ python clean_text_column.py your_data.csv
+```
+  
+Cleaned output is then run in the chat_agent (chat_agent.py) with   
+```bash
+csv_path="kizen_cleaned.csv",  # Use the provided CSV for all agents in this prototype
+```
+
 ### ▶️ Running the App
 
 ```bash
