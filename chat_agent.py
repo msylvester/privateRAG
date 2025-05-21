@@ -7,7 +7,7 @@ import os
 import json
 from typing import List, Dict, Any, Optional, Union
 import uuid
-from langchain.prompts import ChatPromptTemplate
+from langchain.prompts import PromptTemplate
 from langchain_openai import ChatOpenAI
 from langchain.chains import LLMChain
 from langchain.memory import ConversationBufferMemory
@@ -46,13 +46,10 @@ class ChatAgent:
         if collection_name and not retriever:
             self.retriever = DocumentRetriever(collection_name=collection_name)
         
-        # Set up conversation memory
-        self.memory = memory or ConversationBufferMemory(
-            memory_key="chat_history",
-            return_messages=True
-        )
+        # Set up conversation memory (disabled for single-input prompt)
+        self.memory = None
         
-        # Set up the prompt template
+        # Set up the prompt template (single input variable for memory compatibility)
         self._setup_prompt_template()
         
         # Set up the chain
@@ -60,31 +57,17 @@ class ChatAgent:
     
     def _setup_prompt_template(self):
         """Set up the prompt template for the agent."""
-        self.prompt_template = ChatPromptTemplate.from_template("""
-        You are a helpful assistant named {agent_name} that answers questions based on the provided context.
-        
-        Chat History:
-        {chat_history}
-        
-        Context information is below:
-        {context}
-        
-        Given the context information and not prior knowledge, answer the question.
-        If you don't know the answer, just say "I don't have enough information to answer that question."
-        Don't try to make up an answer.
-        
-        Question: {question}
-        
-        Answer:
-        """)
+        self.prompt_template = PromptTemplate(
+            template="{input}",
+            input_variables=["input"]
+        )
     
     def _setup_chain(self):
         """Set up the LLM chain for the agent."""
         self.chain = LLMChain(
             llm=self.llm,
             prompt=self.prompt_template,
-            verbose=False,
-            memory=self.memory
+            verbose=True # memory is None
         )
     
     def _get_context(self, query: str) -> str:
@@ -115,145 +98,44 @@ class ChatAgent:
             context_parts.append(f"Document {i+1}{source_info}:\n{doc['text']}\n")
         
         return "\n".join(context_parts)
-    def test_invoke(chain):
-        print("Chain input keys:", chain.input_keys)
-        print("Prompt input variables:", getattr(chain.prompt, "input_variables", None))
-
-        # Compose full input if only one input key is expected
-        if len(chain.input_keys) == 1:
-            key = chain.input_keys[0]
-            composed_input = {
-                key: {
-                    "agent_name": "SupportBot",
-                    "chat_history": "User: Hello\nAgent: Hi!",
-                    "context": "User needs help resetting password",
-                    "question": "How do I reset my password?"
-                }
-            }
-        else:
-            # Otherwise, flat input dict
-            composed_input = {
-                "agent_name": "SupportBot",
-                "chat_history": "User: Hello\nAgent: Hi!",
-                "context": "User needs help resetting password",
-                "question": "How do I reset my password?"
-            }
-        try:
-            result = chain.invoke(composed_input)
-            print("Invoke result:", result)
-        except Exception as e:
-            print("Exception during invoke:", e)
-
+    
     def query(self, question: str) -> Dict[str, Any]:
+        """
+        Process a user query and generate a response.
+        
+        Args:
+            question: The user's question
+            
+        Returns:
+            Dictionary containing the response and metadata
+        """
         # Get context for the question
         context = self._get_context(question)
 
-        # Instead of invoking the chain, forge a response
-        forged_response = {
-            "text": f"This is a forged response from {self.agent_name}. I'm pretending to answer your question about {question}"
-        }
+        prompt_string = (
+            f"You are a helpful assistant named {self.agent_name} that answers questions based on the provided context.\n"
+            f"\n"
+            f"Context information is below:\n"
+            f"{context}\n"
+            f"\n"
+            f"Given the context information and not prior knowledge, answer the question.\n"
+            f"If you don't know the answer, just say \"I don't have enough information to answer that question.\"\n"
+            f"Don't try to make up an answer.\n"
+            f"\n"
+            f"Question: {question}\n"
+            f"\n"
+            f"Answer:\n"
+        )
+
+        response = self.chain.invoke({"input": prompt_string})
 
         return {
             "agent_id": self.agent_id,
             "agent_name": self.agent_name,
             "question": question,
-            "answer": forged_response["text"],
+            "answer": response["text"],
             "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
         }
-
-
-    # def query(self, question: str) -> Dict[str, Any]:
-    #     context = self._get_context(question)
-    #     print(121)
-    #     print(self.chain.input_schema.model_json_schema())
-
-    #     try:
-    #         # Build the input dict with correct keys
-    #         chain_input = {
-    #             "question": question,
-    #             "agent_name": self.agent_name,
-    #             "context": context,
-    #             "chat_history": None  # or pass an actual chat history if available
-    #         }
-    #         example_input = {
-    #             "agent_name": "ScienceBot",
-    #             "question": "What is the speed of light?",
-    #             "context": "This is for a high school physics student.",
-    #             "chat_history": []
-    #         }
-
-    #         response = self.chain.invoke(example_input)
-
-    #     except Exception as e:
-    #         print(f'Exception occurred: {e}')
-    #         return {
-    #             "agent_id": self.agent_id,
-    #             "agent_name": self.agent_name,
-    #             "question": question,
-    #             "answer": f"Error: {e}",
-    #             "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
-    #         }
-
-    #     print(f'The response is from: {self.agent_name}')
-
-    #     return {
-    #         "agent_id": self.agent_id,
-    #         "agent_name": self.agent_name,
-    #         "question": question,
-    #         "answer": response["text"],
-    #         "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
-    #     }
-
-
-    # def query(self, question: str) -> Dict[str, Any]:
-    #     # Get context for the question
-    #     print('inside query, line 121')
-    #     context = self._get_context(question)
-    #     print(f'the context is {context}')
-    #     # Run the chain with a single input key
-    #     response = self.chain.invoke({"input": {
-    #         "agent_name": self.agent_name,
-    #         "question": question,
-    #         "context": context
-    #     }})
-
-    #     # Return the response with metadata
-    #     return {
-    #         "agent_id": self.agent_id,
-    #         "agent_name": self.agent_name,
-    #         "question": question,
-    #         "answer": response["text"],
-    #         "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
-    #     }
-
-    # def query(self, question: str) -> Dict[str, Any]:
-    #     """
-    #     Process a user query and generate a response.
-        
-    #     Args:
-    #         question: The user's question
-            
-    #     Returns:
-    #         Dictionary containing the response and metadata
-    #     """
-    #     # Get context for the question
-    #     context = self._get_context(question)
-        
-    #     # Run the chain
-    #     response = self.chain.invoke({
-    #         "agent_name": self.agent_name,
-    #         "question": question,
-    #         "context": context
-    #     })
-        
-    #     # Return the response with metadata
-    #     return {
-    #         "agent_id": self.agent_id,
-    #         "agent_name": self.agent_name,
-    #         "question": question,
-    #         "answer": response["text"],
-    #         "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
-    #     }
     
     def save(self, directory: str = "./data/agents") -> str:
         """
@@ -326,6 +208,7 @@ class AgentManager:
                 agent_id = filename[:-5]  # Remove .json extension
                 try:
                     self.agents[agent_id] = ChatAgent.load(agent_id, self.agents_directory)
+                    print(f"Loaded agent: {self.agents[agent_id].agent_name} ({agent_id})")
                 except Exception as e:
                     print(f"Error loading agent {agent_id}: {str(e)}")
     
@@ -351,12 +234,12 @@ class AgentManager:
         
         # For the prototype, we'll use the kizen.csv file regardless of URL
         # In a real system, we would scrape the URL and process the content
-       
+        print('244')
         ingester = DocumentIngester()
-      
+        print('finished')
         try:
             # Process the CSV file (in a real system, this would be content from the URL)
-           
+            print('249')
             vector_store = ingester.process_csv(
                 csv_path="kizen.csv",  # Use the provided CSV for all agents in this prototype
                 text_column="content",
@@ -364,19 +247,19 @@ class AgentManager:
                 title_column="title",
                 collection_name=collection_name
             )
-      
+            print('256')
             # Create the agent
             agent = ChatAgent(
                 agent_name=agent_name or f"Agent for {domain}",
                 collection_name=collection_name
             )
-           
+            print('262')
             # Save the agent configuration
             agent.save(self.agents_directory)
-        
+            print('265')
             # Add to the loaded agents
             self.agents[agent.agent_id] = agent
-          
+            print('268')
             return agent
             
         except Exception as e:
@@ -445,5 +328,22 @@ if __name__ == "__main__":
     
     # Test the agent
     response = agent.query("What is Kizen?")
-    # print(f"Question: {response['question']}")
-    # print(f"Answer: {response['answer']}")
+    print(f"Question: {response['question']}")
+    print(f"Answer: {response['answer']}")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
