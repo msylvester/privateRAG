@@ -208,9 +208,9 @@ class AgentManager:
                 agent_id = filename[:-5]  # Remove .json extension
                 try:
                     self.agents[agent_id] = ChatAgent.load(agent_id, self.agents_directory)
-                    print(f"Loaded agent: {self.agents[agent_id].agent_name} ({agent_id})")
+                    pass
                 except Exception as e:
-                    print(f"Error loading agent {agent_id}: {str(e)}")
+                    pass
     
     def create_agent(self, url: str, agent_name: Optional[str] = None) -> ChatAgent:
         """
@@ -234,9 +234,7 @@ class AgentManager:
         
         # For the prototype, we'll use the kizen.csv file regardless of URL
         # In a real system, we would scrape the URL and process the content
-        print('244')
         ingester = DocumentIngester()
-        print('finished')
         try:
             # Process the CSV file (in a real system, this would be content from the URL)
             vector_store = ingester.process_csv(
@@ -255,7 +253,6 @@ class AgentManager:
             agent.save(self.agents_directory)
             # Add to the loaded agents
             self.agents[agent.agent_id] = agent
-            print('268')
             return agent
             
         except Exception as e:
@@ -324,8 +321,6 @@ if __name__ == "__main__":
     
     # Test the agent
     response = agent.query("What is Kizen?")
-    print(f"Question: {response['question']}")
-    print(f"Answer: {response['answer']}")
 
 
 
