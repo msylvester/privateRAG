@@ -15,7 +15,7 @@ from chat_agent import ChatAgent, AgentManager
 
 # Set up the page
 st.set_page_config(
-    page_title="Kizen RAG Chat System",
+    page_title="RAG Chat System",
     page_icon="🤖",
     layout="wide"
 )
@@ -78,7 +78,7 @@ def delete_agent(agent_id: str) -> None:
         st.error("Failed to delete agent.")
 
 # Main layout
-st.title("Kizen RAG Chat System")
+st.title("RAG Chat System")
 
 # Sidebar for agent management
 with st.sidebar:
