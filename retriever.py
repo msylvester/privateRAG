@@ -57,7 +57,6 @@ class DocumentRetriever:
             collection_name=self.collection_name
         )
         
-        print(f"Loaded vector store with {self.vector_store._collection.count()} documents")
     
     def _setup_retriever(self):
         """Set up the retriever with optional compression."""

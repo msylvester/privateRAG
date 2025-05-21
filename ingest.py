@@ -27,11 +27,8 @@ class DocumentIngester:
         os.environ.pop('HTTP_PROXY', None)
         os.environ.pop('HTTPS_PROXY', None)
         self.chunk_overlap = chunk_overlap
-        print(30)
         # Initialize OpenAIEmbeddings without proxies parameter
         self.embedding_model = embedding_model or OpenAIEmbeddings()
-       
-        print(31)
         self.text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=self.chunk_size,
             chunk_overlap=self.chunk_overlap,
@@ -52,9 +49,7 @@ class DocumentIngester:
             raise FileNotFoundError(f"CSV file not found: {file_path}")
         
         try:
-            print(f'the file path {file_path}')
             df = pd.read_csv(file_path, quoting=1, engine='python', on_bad_lines='skip')
-            print(f"Loaded CSV with {len(df)} rows and columns: {df.columns.tolist()}")
             return df
         except Exception as e:
             raise Exception(f"Error loading CSV: {str(e)}")
@@ -141,8 +136,6 @@ class DocumentIngester:
         Preprocess the dataframe into a list of document dictionaries.
         """
         documents = []
-        print(f"Total rows in DataFrame: {len(df)}")
-        print(f"Available columns: {df.columns.tolist()}")
     
         for idx, row in df.iterrows():
             doc_text = None
@@ -164,12 +157,10 @@ class DocumentIngester:
                 metadata["url"] = row[url_column]
             if title_column and title_column in row.index and not pd.isna(row[title_column]):
                 metadata["title"] = row[title_column]
-            print(f"✅ Adding row {idx} to documents")
             documents.append({
                 "text": str(doc_text),
                 "metadata": metadata
             })
-        print(f"\n✅ Total valid documents: {len(documents)}")
         return documents
 
     def chunk_documents(self, documents: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -183,8 +174,6 @@ class DocumentIngester:
             List of chunked document dictionaries
         """
         chunked_documents = []
-        print(f'about to print docs')
-        didPrint = False 
         # for doc in documents:
         #     while (not didPrint): 
         #         print(190)
@@ -215,7 +204,6 @@ class DocumentIngester:
                     "metadata": chunk_metadata
                 })
     
-        print(f"Created {len(chunked_documents)} chunks from {len(documents)} documents")
         return chunked_documents
     
     def create_vector_store(self, chunked_documents: List[Dict[str, Any]], 
