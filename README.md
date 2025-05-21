@@ -1,12 +1,12 @@
-Here's a polished and better-formatted version of your `README.md` with consistent headers, improved structure, and Markdown best practices applied for clarity and readability:
 
----
 
 # 🤖 RAG Chat System
 
 ## 📚 Overview
 
 **RAG Chat System** is a Retrieval-Augmented Generation (RAG) based AI chat platform that enables users to create intelligent agents trained on custom documentation sources. These agents can then answer domain-specific questions using contextual memory and source retrieval.
+
+![RAG View Screenshot](images/rag_view.png)
 
 ---
 
