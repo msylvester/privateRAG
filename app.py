@@ -55,7 +55,7 @@ def send_message(agent_id: str, message: str) -> None:
     st.session_state.chat_history[agent_id].append({"role": "user", "content": message})
     agent = st.session_state.agent_manager.get_agent(agent_id)
     with st.spinner("Thinking..."):
-        response = agent.query(message)
+        response = agent.query(message, show_ranking=st.session_state.get("show_ranking", False))
         st.session_state.chat_history[agent_id].append({"role": "assistant", "content": response["answer"]})
 
 # Function to switch agents
@@ -83,6 +83,9 @@ st.title("RAG Chat System")
 # Sidebar for agent management
 with st.sidebar:
     st.header("Agent Management")
+    
+    # Add option to show ranking scores
+    show_ranking = st.checkbox("Show document ranking scores", value=False)
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
         new_agent_name = st.text_input("Agent Name", placeholder="My Documentation Agent")

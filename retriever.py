@@ -74,18 +74,21 @@ class DocumentRetriever:
             )
         else:
             self.retriever = base_retriever
-    def retrieve(self, query: str) -> List[Dict[str, Any]]:
+    def retrieve(self, query: str, include_scores: bool = False) -> List[Dict[str, Any]]:
         """
         Retrieve relevant documents for a query.
 
         Args:
             query: The search query
+            include_scores: Whether to include similarity scores
 
         Returns:
-            List of retrieved documents with text and metadata
+            List of retrieved documents with text and metadata (and scores if requested)
         """
+        if include_scores:
+            return self.retrieve_with_scores(query)
+            
         # invoke() is now the recommended method
-   
         docs = self.retriever.invoke(query)
 
         # Convert to a more usable format

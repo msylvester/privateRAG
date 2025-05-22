@@ -70,12 +70,13 @@ class ChatAgent:
             verbose=True # memory is None
         )
     
-    def _get_context(self, query: str) -> str:
+    def _get_context(self, query: str, include_scores: bool = False) -> str:
         """
         Retrieve context for a query.
         
         Args:
             query: The user's query
+            include_scores: Whether to include similarity scores
             
         Returns:
             String containing the retrieved context
@@ -83,7 +84,7 @@ class ChatAgent:
         if not self.retriever:
             return "No context available."
         
-        retrieved_docs = self.retriever.retrieve(query)
+        retrieved_docs = self.retriever.retrieve(query, include_scores=include_scores)
         
         if not retrieved_docs:
             return "No relevant information found."
@@ -95,22 +96,27 @@ class ChatAgent:
             if "url" in doc["metadata"]:
                 source_info = f" (Source: {doc['metadata']['url']})"
             
-            context_parts.append(f"Document {i+1}{source_info}:\n{doc['text']}\n")
+            score_info = ""
+            if include_scores and "score" in doc:
+                score_info = f" [Relevance: {doc['score']:.4f}]"
+            
+            context_parts.append(f"Document {i+1}{source_info}{score_info}:\n{doc['text']}\n")
         
         return "\n".join(context_parts)
     
-    def query(self, question: str) -> Dict[str, Any]:
+    def query(self, question: str, show_ranking: bool = False) -> Dict[str, Any]:
         """
         Process a user query and generate a response.
         
         Args:
             question: The user's question
+            show_ranking: Whether to show document ranking scores
             
         Returns:
             Dictionary containing the response and metadata
         """
         # Get context for the question
-        context = self._get_context(question)
+        context = self._get_context(question, include_scores=show_ranking)
 
         prompt_string = (
             f"You are a helpful assistant named {self.agent_name} that answers questions based on the provided context.\n"
@@ -134,7 +140,8 @@ class ChatAgent:
             "agent_name": self.agent_name,
             "question": question,
             "answer": response["text"],
-            "has_context": bool(context and context != "No context available." and context != "No relevant information found.")
+            "has_context": bool(context and context != "No context available." and context != "No relevant information found."),
+            "context_with_scores": show_ranking
         }
     
     def save(self, directory: str = "./data/agents") -> str:
