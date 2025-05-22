@@ -5,8 +5,8 @@
 
 **RAG Chat System** is a Retrieval-Augmented Generation (RAG) based AI chat platform that enables users to create intelligent agents trained on custom documentation sources. These agents can then answer domain-specific questions using contextual memory and source retrieval.
 
-![RAG View Screenshot](images/rag_view.png)
 
+![RAG Success Screenshot](images/john_kizen.png)
 ---
 
 ## ✨ Features
@@ -41,7 +41,7 @@
 ```bash
 # Clone the repository
 git clone <repository-url>
-cd rag-chat-system
+cd privateRAG
 
 # Install dependencies
 pip install -r requirements.txt
@@ -85,13 +85,13 @@ The project includes test scripts to verify core functionality:
 | Script           | Description                           |
 | ---------------- | ------------------------------------- |
 | `test_invoke.py` | Test direct chain invocation logic    |
-| `test_format.py` | Test chain formatting and setup logic |
+ |
 
 ### Run Tests
 
 ```bash
 python test_invoke.py
-python test_format.py
+
 ```
 
 ---
@@ -105,7 +105,6 @@ rag-chat-system/
 ├── ingest.py          # Document ingestion and embedding
 ├── retriever.py       # Vector store retrieval logic
 ├── test_invoke.py     # Direct invocation test
-├── test_format.py     # Chain formatting test
 └── requirements.txt   # Python dependencies
 ```
 
