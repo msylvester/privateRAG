@@ -53,82 +53,6 @@ class DocumentIngester:
             return df
         except Exception as e:
             raise Exception(f"Error loading CSV: {str(e)}")
-    # def preprocess_dataframe(self, df: pd.DataFrame,
-    #                        candidate_text_columns: List[str] = ["content", "text", "markdown"],
-    #                        url_column: Optional[str] = None,
-    #                        title_column: Optional[str] = None) -> List[Dict[str, Any]]:
-    #     """
-    #     Preprocess the dataframe into a list of document dictionaries.
-
-    #     Args:
-    #         df: DataFrame containing the data
-    #         candidate_text_columns: List of column names to check for text content
-    #         url_column: Optional name of the column containing URLs
-    #         title_column: Optional name of the column containing titles
-
-    #     Returns:
-    #         List of document dictionaries with text and metadata
-    #     """
-    #     documents = []
-
-    #     for idx, row in df.iterrows():
-    #         doc_text = None
-    #         # Search for the first candidate column with non-empty text
-    #         for col in candidate_text_columns:
-    #             if col in row and not pd.isna(row[col]) and row[col] != "":
-    #                 doc_text = row[col]
-    #                 break
-    #         if not doc_text:
-    #             continue
-
-    #         metadata = {"source_idx": idx}
-    #         if url_column and url_column in row and not pd.isna(row[url_column]):
-    #             metadata["url"] = row[url_column]
-    #         if title_column and title_column in row and not pd.isna(row[title_column]):
-    #             metadata["title"] = row[title_column]
-
-    #         documents.append({
-    #             "text": doc_text,
-    #             "metadata": metadata
-    #         })
-
-    #     return documents   
-    
-    # def preprocess_dataframe(self, df: pd.DataFrame, text_column: str, 
-    #                          url_column: Optional[str] = None,
-    #                          title_column: Optional[str] = None) -> List[Dict[str, Any]]:
-    #     """
-    #     Preprocess the dataframe into a list of document dictionaries.
-        
-    #     Args:
-    #         df: DataFrame containing the data
-    #         text_column: Name of the column containing the text content
-    #         url_column: Optional name of the column containing URLs
-    #         title_column: Optional name of the column containing titles
-            
-    #     Returns:
-    #         List of document dictionaries with text and metadata
-    #     """
-    #     documents = []
-        
-    #     for idx, row in df.iterrows():
-    #         if text_column not in row or pd.isna(row[text_column]) or row[text_column] == "":
-    #             continue
-                
-    #         metadata = {"source_idx": idx}
-            
-    #         if url_column and url_column in row and not pd.isna(row[url_column]):
-    #             metadata["url"] = row[url_column]
-                
-    #         if title_column and title_column in row and not pd.isna(row[title_column]):
-    #             metadata["metadata/title"] = row[title_column]
-            
-    #         documents.append({
-    #             "text": row[text_column],
-    #             "metadata": metadata
-    #         })
-    #     print (f'the documents are {len(documents)}')
-    #     return documents
     def preprocess_dataframe(self, df: pd.DataFrame, candidate_text_columns: List[str] = ["text", "markdown", "content"],
                             url_column: Optional[str] = None,
                             title_column: Optional[str] = None) -> List[Dict[str, Any]]:
@@ -174,23 +98,6 @@ class DocumentIngester:
             List of chunked document dictionaries
         """
         chunked_documents = []
-        # for doc in documents:
-        #     while (not didPrint): 
-        #         print(190)
-        #         text_chunks = self.text_splitter.split_text(doc["text"])
-        #         print(192)
-        #         didPrint = True
-        #         for chunk in text_chunks:
-        #             # Create a copy of the metadata to avoid modifying the original
-        #             chunk_metadata = doc["metadata"].copy()
-        #             # Add a unique chunk ID
-        #             chunk_metadata["chunk_id"] = str(uuid.uuid4())
-                    
-        #             chunked_documents.append({
-        #                 "text": chunk,
-        #                 "metadata": chunk_metadata
-        #             })
-        #         didPrint = False 
         for doc in documents:
             text = str(doc["text"])
             text_chunks = self.text_splitter.split_text(text)
@@ -218,33 +125,12 @@ class DocumentIngester:
         Returns:
             Chroma vector store containing the document embeddings
         """
-        # print(139)
         texts = [doc["text"] for doc in chunked_documents]
-        # print(141)
         metadatas = [doc["metadata"] for doc in chunked_documents]
-        # print(142)
         
         # Create a persistent Chroma vector store
         persist_directory = f"./data/chroma/{collection_name}"
-        # print(147)
         os.makedirs(persist_directory, exist_ok=True)
-        # print(149)
-      
-       
-        # texts = [
-        #     "The quick brown fox jumps over the lazy dog.",
-        #     "Artificial intelligence is transforming the world.",
-        #     "Python is a versatile programming language."
-        # ]
-
-        # metadatas = [
-        #     {"source": "sentence_1.txt", "author": "Author A"},
-        #     {"source": "sentence_2.txt", "author": "Author B"},
-        #     {"source": "sentence_3.txt", "author": "Author C"},
-        # ]
-        # print(f'the texts are {texts[0]}')
-        # print(f'the metadata is {metadatas[0]}')
-        # print(f'the collection is {collection_name}')
     
         vector_store = Chroma.from_texts(
             texts=texts,
@@ -257,7 +143,6 @@ class DocumentIngester:
         # Persist the vector store to disk
         vector_store.persist()
         
-        #print(f"Created vector store with {len(texts)} documents in collection '{collection_name}'")
         return vector_store
     
     def process_csv(self, csv_path: str, text_column: str, 
@@ -284,7 +169,6 @@ class DocumentIngester:
    
         # Load and process the CSV
         df = self.load_csv(csv_path)
-        #df = self.load_csv('test_csv.csv')
       
         documents = self.preprocess_dataframe(
             df,
