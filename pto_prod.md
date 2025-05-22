@@ -1,11 +1,13 @@
 # Slide: Production Frameworks Overview
 
-- **Streamlit:** Interactive web UI for the application.
-- **LangChain:** Orchestrates chat agent functionality and language model pipelines.
-- **Chroma:** Persistent vector store for document embeddings.
-- **OpenAIEmbeddings:** Generates semantic text embeddings.
-- **Pandas & NumPy:** Data manipulation and numerical processing.
-- **Production Enhancements:**
-  - **FastAPI:** For a robust, asynchronous API layer.
-  - **Docker & Kubernetes:** For containerized, scalable deployments.
-  - **CI/CD Pipelines:** For continuous integration and automated delivery.
+## Current Frameworks
+- **Streamlit:** Interactive web UI (currently used in app.py)
+- **LangChain:** Orchestrates chat agent functionality (currently used in chat_agent.py)
+- **Chroma:** Persistent vector store for document embeddings (currently used in ingest.py)
+- **OpenAIEmbeddings:** Generates semantic text embeddings (currently used in ingest.py)
+- **Pandas & NumPy:** Data manipulation and numerical processing (currently used in ingest.py)
+
+## Production Enhancements
+- **FastAPI:** For a robust, asynchronous API layer
+- **Docker & Kubernetes:** For containerized, scalable deployments
+- **CI/CD Pipelines:** For continuous integration and automated delivery
