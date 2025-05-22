@@ -33,7 +33,7 @@
 
 ### ✅ Prerequisites
 
-* Python `3.8+`
+* Python `3.12`
 * OpenAI API Key (set as an environment variable)
 
 ### 📦 Installation
