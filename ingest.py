@@ -10,7 +10,6 @@ from typing import List, Dict, Any, Optional
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain_community.vectorstores import Chroma
 from langchain_openai import OpenAIEmbeddings
-import os
 import uuid
 
 class DocumentIngester:
@@ -184,12 +183,9 @@ class DocumentIngester:
         
         return vector_store
 
-# Example usage
 if __name__ == "__main__":
-    # This is just for testing - the actual API will be used through the main app
     ingester = DocumentIngester()
     
-    # Process a small example CSV file
     vector_store = ingester.process_csv(
         csv_path="kizen_ex.csv",
         text_column="text",

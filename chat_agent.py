@@ -223,20 +223,13 @@ class AgentManager:
         Returns:
             Newly created ChatAgent instance
         """
-        # Generate a collection name from the URL
-        # In a real system, we would scrape the URL here
-        # For this prototype, we'll use a mock approach
-        
         # Extract domain from URL as a simple way to generate a collection name
         from urllib.parse import urlparse
         domain = urlparse(url).netloc
         collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
         
-        # For the prototype, we'll use the kizen.csv file regardless of URL
-        # In a real system, we would scrape the URL and process the content
         ingester = DocumentIngester()
         try:
-            # Process the CSV file (in a real system, this would be content from the URL)
             vector_store = ingester.process_csv(
                 csv_path="kizen_cleaned.csv",  # Use the provided CSV for all agents in this prototype
                 text_column="content",
@@ -308,33 +301,13 @@ class AgentManager:
         
         return True
 
-# Example usage
 if __name__ == "__main__":
-    # This is just for testing - the actual API will be used through the main app
     manager = AgentManager()
     
-    # Create a new agent
     agent = manager.create_agent(
         url="https://example.com",
         agent_name="Example Agent"
     )
     
-    # Test the agent
     response = agent.query("What is Kizen?")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
