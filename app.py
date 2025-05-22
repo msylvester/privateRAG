@@ -143,7 +143,7 @@ else:
 if st.sidebar.checkbox("Show Sample Data", value=False):
     st.subheader("Sample Data Preview")
     try:
-        sample_df = pd.read_csv("kizen_ex.csv")
+        sample_df = pd.read_csv("kizen_cleaned.csv")
         st.dataframe(sample_df.head())
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
