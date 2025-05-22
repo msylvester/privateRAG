@@ -85,7 +85,10 @@ with st.sidebar:
     st.header("Agent Management")
     
     # Add option to show ranking scores
-    show_ranking = st.checkbox("Show document ranking scores", value=False)
+    if "show_ranking" not in st.session_state:
+        st.session_state["show_ranking"] = False
+    show_ranking = st.checkbox("Show document ranking scores", value=st.session_state["show_ranking"])
+    st.session_state["show_ranking"] = show_ranking
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
         new_agent_name = st.text_input("Agent Name", placeholder="My Documentation Agent")
