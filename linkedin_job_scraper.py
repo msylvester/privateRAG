@@ -71,6 +71,7 @@ class LinkedInJobScraper:
         
         # Find all job cards
         job_cards = soup.find_all('div', class_='job-search-card')
+        print(f'here are the job cards {job_cards}')
         
         if not job_cards:
             # If the expected structure isn't found, try an alternative approach
