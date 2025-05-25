@@ -93,7 +93,7 @@ def fetch_jobs_data():
         cur = conn.cursor()
 
         # Execute a query to fetch all data from the 'jobs' table
-        cur.execute("SELECT name, uid FROM jobs")  # Select name and uid
+        cur.execute("SELECT name, id FROM jobs")  # Select name and id
         data = cur.fetchall()
 
         # Close the cursor and connection
@@ -198,7 +198,7 @@ if show_db_table:
     st.subheader("Jobs Table Data")
     jobs_data = fetch_jobs_data()
     if jobs_data:
-        df = pd.DataFrame(jobs_data, columns=["name", "uid"])  # Create a Pandas DataFrame
+        df = pd.DataFrame(jobs_data, columns=["name", "id"])  # Create a Pandas DataFrame
         st.dataframe(df)  # Display the DataFrame as a table
 
 # Run the Streamlit app
