@@ -188,14 +188,8 @@ with st.sidebar:
     show_ranking = st.checkbox("Show document ranking scores", value=st.session_state["show_ranking"])
     st.session_state["show_ranking"] = show_ranking
 
-    # Add option to show database table
-    show_db_table = st.checkbox("Show Jobs Table", value=False)
-
-    # Add option to show skillz table
-    show_skillz_table = st.checkbox("Show Skills", value=False)
-    
     # Add option to show unified view
-    show_unified_view = st.checkbox("Show Unified Jobs & Skills View", value=False)
+    show_unified_view = st.checkbox("Show Jobs & Skills View", value=False)
 
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
@@ -268,25 +262,9 @@ if st.sidebar.checkbox("Show Sample Data", value=False):
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
 
-# Display the jobs table if the checkbox is selected
-if show_db_table:
-    st.subheader("Jobs Table Data")
-    jobs_data = fetch_jobs_data()
-    if jobs_data:
-        df = pd.DataFrame(jobs_data, columns=["name", "id"])  # Create a Pandas DataFrame
-        st.dataframe(df)  # Display the DataFrame as a table
-
-# Display the skillz table if the checkbox is selected
-if show_skillz_table:
-    st.subheader("Skillz Table Data")
-    skillz_data = fetch_skillz_data()
-    if skillz_data:
-        df = pd.DataFrame(skillz_data, columns=["skill_name", "company_name"])  # Create a Pandas DataFrame
-        st.dataframe(df)  # Display the DataFrame as a table
-
 # Display the unified view if the checkbox is selected
 if show_unified_view:
-    st.subheader("Unified Jobs & Skills View")
+    st.subheader("Jobs & Skills View")
     unified_data = fetch_unified_data()
     if unified_data is not None:
         # Add a filter for company/job name
