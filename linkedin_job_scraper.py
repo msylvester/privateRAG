@@ -52,6 +52,12 @@ class LinkedInJobScraper:
         try:
             response = requests.get(url, headers=self.headers)
             response.raise_for_status()
+            
+            # Save the HTML content to a file
+            with open('linkedin_response.html', 'w', encoding='utf-8') as f:
+                f.write(response.text)
+            print("HTML content saved to 'linkedin_response.html'")
+            
             return BeautifulSoup(response.text, 'html.parser')
         except requests.exceptions.RequestException as e:
             print(f"Error fetching page: {e}")
