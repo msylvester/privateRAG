@@ -1,4 +1,3 @@
-
 """
 Main application for RAG-based chat system.
 Provides a Streamlit UI for interacting with chat agents.
@@ -8,6 +7,7 @@ import streamlit as st
 import pandas as pd
 import os
 from typing import Dict, List, Any, Optional
+import psycopg2  # Import psycopg2
 
 from ingest import DocumentIngester
 from retriever import DocumentRetriever
@@ -77,18 +77,51 @@ def delete_agent(agent_id: str) -> None:
     else:
         st.error("Failed to delete agent.")
 
+# --- Database connection and data fetching ---
+def fetch_jobs_data():
+    """Fetches data from the 'jobs' table in the PostgreSQL database."""
+    try:
+        # Get the database URL from the environment variable
+        postgres_url = os.environ.get("POSTGRES_URL")
+
+        if not postgres_url:
+            st.error("POSTGRES_URL environment variable not set.")
+            return None
+
+        # Establish a connection to the PostgreSQL database
+        conn = psycopg2.connect(postgres_url)
+        cur = conn.cursor()
+
+        # Execute a query to fetch all data from the 'jobs' table
+        cur.execute("SELECT name, uid FROM jobs")  # Select name and uid
+        data = cur.fetchall()
+
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+
+        return data
+
+    except Exception as e:
+        st.error(f"Error fetching data from the database: {e}")
+        return None
+
 # Main layout
 st.title("RAG Chat System")
 
 # Sidebar for agent management
 with st.sidebar:
     st.header("Agent Management")
-    
+
     # Add option to show ranking scores
     if "show_ranking" not in st.session_state:
         st.session_state["show_ranking"] = False
     show_ranking = st.checkbox("Show document ranking scores", value=st.session_state["show_ranking"])
     st.session_state["show_ranking"] = show_ranking
+
+    # Add option to show database table
+    show_db_table = st.checkbox("Show Jobs Table", value=False)
+
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
         new_agent_name = st.text_input("Agent Name", placeholder="My Documentation Agent")
@@ -102,6 +135,7 @@ with st.sidebar:
         with col2:
             if st.button("Add Skills"):
                 st.info("Alert created")
+
     st.subheader("Your Agents")
     agents = st.session_state.agent_manager.list_agents()
     if not agents:
@@ -159,10 +193,15 @@ if st.sidebar.checkbox("Show Sample Data", value=False):
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
 
+# Display the jobs table if the checkbox is selected
+if show_db_table:
+    st.subheader("Jobs Table Data")
+    jobs_data = fetch_jobs_data()
+    if jobs_data:
+        df = pd.DataFrame(jobs_data, columns=["name", "uid"])  # Create a Pandas DataFrame
+        st.dataframe(df)  # Display the DataFrame as a table
+
 # Run the Streamlit app
 if __name__ == "__main__":
     # This is handled by Streamlit's execution model
     pass
-
-
-
