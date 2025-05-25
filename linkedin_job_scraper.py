@@ -157,18 +157,23 @@ class LinkedInJobScraper:
 def main():
     """Main function to run the LinkedIn job scraper."""
     parser = argparse.ArgumentParser(description='Scrape LinkedIn job listings')
-    parser.add_argument('--keywords', type=str, default='ai film maker', help='Job search keywords')
-    parser.add_argument('--location', type=str, default='United States', help='Job location')
+    parser.add_argument('--url', type=str, help='LinkedIn job search URL to scrape')
+    parser.add_argument('--keywords', type=str, default='ai film maker', help='Job search keywords (ignored if URL is provided)')
+    parser.add_argument('--location', type=str, default='United States', help='Job location (ignored if URL is provided)')
     parser.add_argument('--output', type=str, default='linkedin_jobs.csv', help='Output filename')
     parser.add_argument('--format', type=str, choices=['csv', 'json'], default='csv', help='Output format')
     args = parser.parse_args()
     
-    # Format the URL with the search parameters
-    keywords = args.keywords.replace(' ', '%20')
-    location_id = '103644278'  # This is the geoId for United States
-    url = f"https://www.linkedin.com/jobs/search/?keywords={keywords}&geoId={location_id}"
+    # Use provided URL or construct one from keywords and location
+    if args.url:
+        url = args.url
+        print(f"Scraping LinkedIn jobs from URL: {url}")
+    else:
+        keywords = args.keywords.replace(' ', '%20')
+        location_id = '103644278'  # This is the geoId for United States
+        url = f"https://www.linkedin.com/jobs/search/?keywords={keywords}&geoId={location_id}"
+        print(f"Scraping LinkedIn jobs for '{args.keywords}' in {args.location}...")
     
-    print(f"Scraping LinkedIn jobs for '{args.keywords}' in {args.location}...")
     
     scraper = LinkedInJobScraper()
     soup = scraper.fetch_page(url)
