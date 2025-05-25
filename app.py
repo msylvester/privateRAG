@@ -134,6 +134,47 @@ def fetch_skillz_data():
         st.error(f"Error fetching data from the database: {e}")
         return None
 
+def fetch_unified_data():
+    """Fetches and joins data from both jobs and skillz tables."""
+    try:
+        # Get the database URL from the environment variable
+        postgres_url = os.environ.get("POSTGRES_URL")
+
+        if not postgres_url:
+            st.error("POSTGRES_URL environment variable not set.")
+            return None
+
+        # Establish a connection to the PostgreSQL database
+        conn = psycopg2.connect(postgres_url)
+        cur = conn.cursor()
+
+        # Execute a query to join the jobs and skillz tables
+        # This query assumes there's a relationship between company_name in skillz 
+        # and name in jobs. Adjust the JOIN condition as needed.
+        query = """
+        SELECT j.id, j.name as job_name, s.skill_name, s.company_name
+        FROM jobs j
+        LEFT JOIN skillz s ON j.name = s.company_name
+        ORDER BY j.name, s.skill_name
+        """
+        
+        cur.execute(query)
+        data = cur.fetchall()
+
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+
+        # Convert to DataFrame with appropriate column names
+        if data:
+            df = pd.DataFrame(data, columns=["job_id", "job_name", "skill_name", "company_name"])
+            return df
+        return None
+
+    except Exception as e:
+        st.error(f"Error fetching unified data from the database: {e}")
+        return None
+
 # Main layout
 st.title("RAG Chat System")
 
@@ -152,6 +193,9 @@ with st.sidebar:
 
     # Add option to show skillz table
     show_skillz_table = st.checkbox("Show Skills", value=False)
+    
+    # Add option to show unified view
+    show_unified_view = st.checkbox("Show Unified Jobs & Skills View", value=False)
 
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
@@ -239,6 +283,35 @@ if show_skillz_table:
     if skillz_data:
         df = pd.DataFrame(skillz_data, columns=["skill_name", "company_name"])  # Create a Pandas DataFrame
         st.dataframe(df)  # Display the DataFrame as a table
+
+# Display the unified view if the checkbox is selected
+if show_unified_view:
+    st.subheader("Unified Jobs & Skills View")
+    unified_data = fetch_unified_data()
+    if unified_data is not None:
+        # Add a filter for company/job name
+        if not unified_data.empty:
+            job_filter = st.selectbox(
+                "Filter by Job/Company:", 
+                options=["All"] + sorted(unified_data["job_name"].unique().tolist())
+            )
+            
+            # Apply filter if not "All"
+            if job_filter != "All":
+                filtered_df = unified_data[unified_data["job_name"] == job_filter]
+            else:
+                filtered_df = unified_data
+                
+            # Display the filtered data
+            st.dataframe(filtered_df)
+            
+            # Show a count of skills per job
+            if st.checkbox("Show Skills Count per Job"):
+                skill_counts = unified_data.groupby("job_name")["skill_name"].count().reset_index()
+                skill_counts.columns = ["Job/Company", "Number of Skills"]
+                st.bar_chart(skill_counts.set_index("Job/Company"))
+    else:
+        st.info("No unified data available or connection issue.")
 
 # Run the Streamlit app
 if __name__ == "__main__":
