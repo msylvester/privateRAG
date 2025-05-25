@@ -56,7 +56,7 @@ def send_message(agent_id: str, message: str) -> None:
     agent = st.session_state.agent_manager.get_agent(agent_id)
     with st.spinner("Thinking..."):
         response = agent.query(message, show_ranking=st.session_state.get("show_ranking", False))
-        st.session_state.chat_history[agent_id].append({"role": "assistant", "content": response["answer"]})
+        st.session_state.chat_history[agent.agent_id].append({"role": "assistant", "content": response["answer"]})
 
 # Function to switch agents
 def switch_agent(agent_id: str) -> None:
@@ -106,6 +106,34 @@ def fetch_jobs_data():
         st.error(f"Error fetching data from the database: {e}")
         return None
 
+def fetch_skillz_data():
+    """Fetches data from the 'skillz' table in the PostgreSQL database."""
+    try:
+        # Get the database URL from the environment variable
+        postgres_url = os.environ.get("POSTGRES_URL")
+
+        if not postgres_url:
+            st.error("POSTGRES_URL environment variable not set.")
+            return None
+
+        # Establish a connection to the PostgreSQL database
+        conn = psycopg2.connect(postgres_url)
+        cur = conn.cursor()
+
+        # Execute a query to fetch all data from the 'skillz' table
+        cur.execute("SELECT skill_name, company_name FROM skillz")  # Select skill_name and company_name
+        data = cur.fetchall()
+
+        # Close the cursor and connection
+        cur.close()
+        conn.close()
+
+        return data
+
+    except Exception as e:
+        st.error(f"Error fetching data from the database: {e}")
+        return None
+
 # Main layout
 st.title("RAG Chat System")
 
@@ -121,6 +149,9 @@ with st.sidebar:
 
     # Add option to show database table
     show_db_table = st.checkbox("Show Jobs Table", value=False)
+
+    # Add option to show skillz table
+    show_skillz_table = st.checkbox("Show Skills", value=False)
 
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs")
@@ -199,6 +230,14 @@ if show_db_table:
     jobs_data = fetch_jobs_data()
     if jobs_data:
         df = pd.DataFrame(jobs_data, columns=["name", "id"])  # Create a Pandas DataFrame
+        st.dataframe(df)  # Display the DataFrame as a table
+
+# Display the skillz table if the checkbox is selected
+if show_skillz_table:
+    st.subheader("Skillz Table Data")
+    skillz_data = fetch_skillz_data()
+    if skillz_data:
+        df = pd.DataFrame(skillz_data, columns=["skill_name", "company_name"])  # Create a Pandas DataFrame
         st.dataframe(df)  # Display the DataFrame as a table
 
 # Run the Streamlit app
