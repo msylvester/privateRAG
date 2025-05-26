@@ -137,7 +137,10 @@ class GreenhouseJobScraper:
         job_listings = self.extract_job_listings(soup, company_name)
         
         if job_listings:
-            return job_listings[0]
+            job_listing = job_listings[0]
+            job_listing['url'] = job_url
+            job_listing['job_id'] = job_url.split('/')[-1] if job_url else "N/A"
+            return job_listing
         else:
             return {'description': 'No job details found'}
     
@@ -156,6 +159,26 @@ class GreenhouseJobScraper:
         df = pd.DataFrame(job_listings)
         df.to_csv(filename, index=False)
         print(f"Saved {len(job_listings)} job listings to {filename}")
+
+    def save_to_txt(self, job_details: Dict[str, str], filename: str = 'greenhouse_job_details.txt') -> None:
+        """
+        Save job details to a text file in a format suitable for RAG.
+        """
+        formatted_text_lines = [
+            f"Title: {job_details.get('title', 'N/A')}",
+            f"Company: {job_details.get('company', 'N/A')}",
+            f"Location: {job_details.get('location', 'N/A')}",
+            f"URL: {job_details.get('url', 'N/A')}",
+            f"Job ID: {job_details.get('job_id', 'N/A')}",
+            "",
+            "Description:",
+            "",
+            f"{job_details.get('description', 'N/A')}"
+        ]
+        formatted_text = "\n".join(formatted_text_lines)
+        with open(filename, 'w', encoding='utf-8') as f:
+            f.write(formatted_text)
+        print(f"Saved job details to {filename}")
     
     def save_to_json(self, job_listings: List[Dict[str, str]], filename: str = 'greenhouse_jobs.json') -> None:
         """
