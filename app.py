@@ -20,6 +20,10 @@ st.set_page_config(
     layout="wide"
 )
 
+# Add Scale button at the top
+if st.button("Scale"):
+    st.info("Scale button clicked")
+
 # Initialize session state
 if "agent_manager" not in st.session_state:
     st.session_state.agent_manager = AgentManager()
