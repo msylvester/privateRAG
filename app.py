@@ -74,6 +74,12 @@ if "clear_input" not in st.session_state:
 # Function to create a new agent
 def create_new_agent(url: str, agent_name: str) -> None:
     """Create a new agent from a URL."""
+    from urllib.parse import urlparse
+    import hashlib
+    parsed_url = urlparse(url)
+    domain = parsed_url.netloc.replace('.', '_')
+    url_hash = hashlib.md5(url.encode('utf-8')).hexdigest()[:8]
+    collection_name = f"{domain}_{url_hash}"
     with st.spinner("Creating agent... This may take a while as we process the documentation."):
         try:
             from greenhouse_job_scraper import GreenhouseJobScraper
@@ -84,7 +90,7 @@ def create_new_agent(url: str, agent_name: str) -> None:
             else:
                 job_text = scraper.get_job_text(job_details)
                 scraper.save_to_txt(job_details)
-                agent = st.session_state.agent_manager.create_agent(url, agent_name)
+                agent = st.session_state.agent_manager.create_agent(url, agent_name, collection_name)
                 st.session_state.current_agent_id = agent.agent_id
                 st.session_state.chat_history[agent.agent_id] = []
                 st.success(f"Agent '{agent_name}' created successfully!")
