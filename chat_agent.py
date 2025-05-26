@@ -238,33 +238,44 @@ class AgentManager:
         import uuid
 
         # If no collection_name is provided, use CSV ingestion for backward compatibility
-        print(f'the collefctin name is {collection_name}')
-        if collection_name is None:
-            domain = urlparse(url).netloc
-            collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
-            ingester = DocumentIngester()
-            try:
-                # Ingest from CSV if scraped data wasn't provided
-                vector_store = ingester.process_csv(
-                    csv_path="kizen_cleaned.csv",
-                    text_column="content",
-                    url_column="url",
-                    title_column="title",
-                    collection_name=collection_name
-                )
-            except Exception as e:
-                raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
+        # print(f'the collefctin name is {collection_name}')
+        # if collection_name is None:
+        domain = urlparse(url).netloc
+        collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
+        print(f'the colection naem {collection_name}')
+        ingester = DocumentIngester()
+        try:
+            # Ingest from CSV if scraped data wasn't provided
+            vector_store = ingester.process_csv(
+                csv_path="greenhouse_jobs.csv",
+                text_column="Value",
+                url_column=None,  # Or you could use "URL" if you want to extract that specific field value
+                title_column=None,  # Or you could use "Title" if you want to extract that specific field value
+                collection_name=collection_name
+            )
+
+            agent = ChatAgent(
+                agent_name=agent_name or f"Agent for {domain}",
+                collection_name=collection_name
+            )
+            # Save the agent configuration
+            agent.save(self.agents_directory)
+            # Add to the loaded agents
+            self.agents[agent.agent_id] = agent
+            return agent
+        except Exception as e:
+            raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
         
         # Otherwise, use the provided coLlection (from scraped job details)
-        agent = ChatAgent(
-            agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
-            collection_name=collection_name
-        )
-        # Save the agent configuration
-        agent.save(self.agents_directory)
-        # Add the agent to the loaded agents
-        self.agents[agent.agent_id] = agent
-        return agent
+        # agent = ChatAgent(
+        #     agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
+        #     collection_name=collection_name
+        # )
+        # # Save the agent configuration
+        # agent.save(self.agents_directory)
+        # # Add the agent to the loaded agents
+        # self.agents[agent.agent_id] = agent
+        # return agent
     
     def get_agent(self, agent_id: str) -> ChatAgent:
         """
