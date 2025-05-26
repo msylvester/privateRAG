@@ -76,10 +76,17 @@ def create_new_agent(url: str, agent_name: str) -> None:
     """Create a new agent from a URL."""
     with st.spinner("Creating agent... This may take a while as we process the documentation."):
         try:
-            agent = st.session_state.agent_manager.create_agent(url, agent_name)
-            st.session_state.current_agent_id = agent.agent_id
-            st.session_state.chat_history[agent.agent_id] = []
-            st.success(f"Agent '{agent_name}' created successfully!")
+            from greenhouse_job_scraper import GreenhouseJobScraper
+            scraper = GreenhouseJobScraper()
+            job_details = scraper.scrape_job_details(url)
+            if not job_details:
+                st.error("Failed to scrape job details.")
+            else:
+                scraper.save_to_txt(job_details)
+                agent = st.session_state.agent_manager.create_agent(url, agent_name)
+                st.session_state.current_agent_id = agent.agent_id
+                st.session_state.chat_history[agent.agent_id] = []
+                st.success(f"Agent '{agent_name}' created successfully!")
         except Exception as e:
             st.error(f"Error creating agent: {str(e)}")
 
