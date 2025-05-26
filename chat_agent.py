@@ -219,44 +219,51 @@ class AgentManager:
                 except Exception as e:
                     pass
     
-    def create_agent(self, url: str, agent_name: Optional[str] = None) -> ChatAgent:
+    def create_agent(self, url: str, agent_name: Optional[str] = None, collection_name: Optional[str] = None) -> ChatAgent:
         """
         Create a new agent for a document URL.
         
         Args:
             url: URL of the document to create an agent for
             agent_name: Optional name for the agent
-            
+            collection_name: Optional name for the vector store collection.
+                             If provided, it indicates an external ingestion (e.g., scraped data)
+                             has already created the embeddings.
+                             
         Returns:
             Newly created ChatAgent instance
         """
-        # Extract domain from URL as a simple way to generate a collection name
         from urllib.parse import urlparse
-        domain = urlparse(url).netloc
-        collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
+        from ingest import DocumentIngester
+        import uuid
+
+        # If no collection_name is provided, use CSV ingestion for backward compatibility
+        if collection_name is None:
+            domain = urlparse(url).netloc
+            collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
+            ingester = DocumentIngester()
+            try:
+                # Ingest from CSV if scraped data wasn't provided
+                vector_store = ingester.process_csv(
+                    csv_path="kizen_cleaned.csv",
+                    text_column="content",
+                    url_column="url",
+                    title_column="title",
+                    collection_name=collection_name
+                )
+            except Exception as e:
+                raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
         
-        ingester = DocumentIngester()
-        try:
-            vector_store = ingester.process_csv(
-                csv_path="kizen_cleaned.csv",  # Use the provided CSV for all agents in this prototype
-                text_column="content",
-                url_column="url",
-                title_column="title",
-                collection_name=collection_name
-            )
-            # Create the agent
-            agent = ChatAgent(
-                agent_name=agent_name or f"Agent for {domain}",
-                collection_name=collection_name
-            )
-            # Save the agent configuration
-            agent.save(self.agents_directory)
-            # Add to the loaded agents
-            self.agents[agent.agent_id] = agent
-            return agent
-            
-        except Exception as e:
-            raise Exception(f"Error creating agent: {str(e)}")
+        # Otherwise, use the provided collection (from scraped job details)
+        agent = ChatAgent(
+            agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
+            collection_name=collection_name
+        )
+        # Save the agent configuration
+        agent.save(self.agents_directory)
+        # Add the agent to the loaded agents
+        self.agents[agent.agent_id] = agent
+        return agent
     
     def get_agent(self, agent_id: str) -> ChatAgent:
         """
