@@ -237,22 +237,34 @@ class AgentManager:
         from ingest import DocumentIngester
         import uuid
 
-        # If no collection_name is provided, use CSV ingestion for backward compatibility
-        # print(f'the collefctin name is {collection_name}')
-        # if collection_name is None:
+        # Generate a collection name if not provided
         domain = urlparse(url).netloc
         collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
-        print(f'the colection naem {collection_name}')
+        print(f'the collection name {collection_name}')
+        
+        # Load and process the CSV data
+        import pandas as pd
         ingester = DocumentIngester()
         try:
-            # Ingest from CSV if scraped data wasn't provided
-            vector_store = ingester.process_csv(
-                csv_path="greenhouse_jobs.csv",
-                text_column="Value",
-                url_column=None,  # Or you could use "URL" if you want to extract that specific field value
-                title_column=None,  # Or you could use "Title" if you want to extract that specific field value
-                collection_name=collection_name
-            )
+            # Read the CSV file
+            df = pd.read_csv("greenhouse_jobs.csv")
+            
+            # Create a single text document from all field-value pairs
+            job_text = "\n".join([f"{row['Field']}: {row['Value']}" for _, row in df.iterrows()])
+            
+            # Create a document for ingestion with metadata
+            documents = [{
+                "text": job_text, 
+                "metadata": {
+                    "source": "greenhouse_jobs.csv",
+                    "url": url,
+                    "title": "Job Description"
+                }
+            }]
+            
+            # Use the ingester to chunk and embed the document
+            chunked_docs = ingester.chunk_documents(documents)
+            vector_store = ingester.create_vector_store(chunked_docs, collection_name=collection_name)
 
             agent = ChatAgent(
                 agent_name=agent_name or f"Agent for {domain}",
