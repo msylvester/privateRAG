@@ -179,6 +179,23 @@ class GreenhouseJobScraper:
         with open(filename, 'w', encoding='utf-8') as f:
             f.write(formatted_text)
         print(f"Saved job details to {filename}")
+
+    def get_job_text(self, job_details: Dict[str, str]) -> str:
+        """
+        Return the job details as formatted text suitable for embedding.
+        """
+        formatted_text_lines = [
+            f"Title: {job_details.get('title', 'N/A')}",
+            f"Company: {job_details.get('company', 'N/A')}",
+            f"Location: {job_details.get('location', 'N/A')}",
+            f"URL: {job_details.get('url', 'N/A')}",
+            f"Job ID: {job_details.get('job_id', 'N/A')}",
+            "",
+            "Description:",
+            "",
+            f"{job_details.get('description', 'N/A')}"
+        ]
+        return "\n".join(formatted_text_lines)
     
     def save_to_json(self, job_listings: List[Dict[str, str]], filename: str = 'greenhouse_jobs.json') -> None:
         """

@@ -82,6 +82,7 @@ def create_new_agent(url: str, agent_name: str) -> None:
             if not job_details:
                 st.error("Failed to scrape job details.")
             else:
+                job_text = scraper.get_job_text(job_details)
                 scraper.save_to_txt(job_details)
                 agent = st.session_state.agent_manager.create_agent(url, agent_name)
                 st.session_state.current_agent_id = agent.agent_id
