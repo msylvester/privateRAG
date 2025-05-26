@@ -238,56 +238,49 @@ class AgentManager:
         import uuid
 
         # Generate a collection name if not provided
-        domain = urlparse(url).netloc
-        collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
-        print(f'the collection name {collection_name}')
+        if collection_name is None:
+            domain = urlparse(url).netloc
+            collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
+            print(f'the collection name {collection_name}')
+            
+            # Load and process the CSV data
+            import pandas as pd
+            ingester = DocumentIngester()
+            try:
+                # Read the CSV file
+                df = pd.read_csv("greenhouse_jobs.csv")
+                
+                # Create a single text document from all field-value pairs
+                job_text = "\n".join([f"{row['Field']}: {row['Value']}" for _, row in df.iterrows()])
+                
+                # Create a document for ingestion with metadata
+                documents = [{
+                    "text": job_text, 
+                    "metadata": {
+                        "source": "greenhouse_jobs.csv",
+                        "url": url,
+                        "title": "Job Description"
+                    }
+                }]
+                
+                # Use the ingester to chunk and embed the document
+                chunked_docs = ingester.chunk_documents(documents)
+                vector_store = ingester.create_vector_store(chunked_docs, collection_name=collection_name)
+            except Exception as e:
+                raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
         
-        # Load and process the CSV data
-        import pandas as pd
-        ingester = DocumentIngester()
-        try:
-            # Read the CSV file
-            df = pd.read_csv("greenhouse_jobs.csv")
-            
-            # Create a single text document from all field-value pairs
-            job_text = "\n".join([f"{row['Field']}: {row['Value']}" for _, row in df.iterrows()])
-            
-            # Create a document for ingestion with metadata
-            documents = [{
-                "text": job_text, 
-                "metadata": {
-                    "source": "greenhouse_jobs.csv",
-                    "url": url,
-                    "title": "Job Description"
-                }
-            }]
-            
-            # Use the ingester to chunk and embed the document
-            chunked_docs = ingester.chunk_documents(documents)
-            vector_store = ingester.create_vector_store(chunked_docs, collection_name=collection_name)
-
-            agent = ChatAgent(
-                agent_name=agent_name or f"Agent for {domain}",
-                collection_name=collection_name
-            )
-            # Save the agent configuration
-            agent.save(self.agents_directory)
-            # Add to the loaded agents
-            self.agents[agent.agent_id] = agent
-            return agent
-        except Exception as e:
-            raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
+        # Create the agent with the collection name (either provided or generated)
+        agent = ChatAgent(
+            agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
+            collection_name=collection_name
+        )
         
-        # Otherwise, use the provided coLlection (from scraped job details)
-        # agent = ChatAgent(
-        #     agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
-        #     collection_name=collection_name
-        # )
-        # # Save the agent configuration
-        # agent.save(self.agents_directory)
-        # # Add the agent to the loaded agents
-        # self.agents[agent.agent_id] = agent
-        # return agent
+        # Save the agent configuration
+        agent.save(self.agents_directory)
+        
+        # Add to the loaded agents
+        self.agents[agent.agent_id] = agent
+        return agent
     
     def get_agent(self, agent_id: str) -> ChatAgent:
         """

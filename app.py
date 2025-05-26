@@ -88,8 +88,26 @@ def create_new_agent(url: str, agent_name: str) -> None:
             if not job_details:
                 st.error("Failed to scrape job details.")
             else:
+                # Get job text and save to file
                 job_text = scraper.get_job_text(job_details)
                 scraper.save_to_txt(job_details)
+                
+                # Create a document for ingestion with metadata
+                ingester = DocumentIngester()
+                documents = [{
+                    "text": job_text, 
+                    "metadata": {
+                        "source": "greenhouse_job_scraper",
+                        "url": url,
+                        "title": job_details.get('title', 'Job Description')
+                    }
+                }]
+                
+                # Use the ingester to chunk and embed the document
+                chunked_docs = ingester.chunk_documents(documents)
+                ingester.create_vector_store(chunked_docs, collection_name=collection_name)
+                
+                # Create the agent with the collection name
                 agent = st.session_state.agent_manager.create_agent(url, agent_name, collection_name)
                 st.session_state.current_agent_id = agent.agent_id
                 st.session_state.chat_history[agent.agent_id] = []
