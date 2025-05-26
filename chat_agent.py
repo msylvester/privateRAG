@@ -238,6 +238,7 @@ class AgentManager:
         import uuid
 
         # If no collection_name is provided, use CSV ingestion for backward compatibility
+        print(f'the collefctin name is {collection_name}')
         if collection_name is None:
             domain = urlparse(url).netloc
             collection_name = f"{domain.replace('.', '_')}{uuid.uuid4().hex[:8]}"
@@ -254,7 +255,7 @@ class AgentManager:
             except Exception as e:
                 raise Exception(f"Error creating agent via CSV ingestion: {str(e)}")
         
-        # Otherwise, use the provided collection (from scraped job details)
+        # Otherwise, use the provided coLlection (from scraped job details)
         agent = ChatAgent(
             agent_name=agent_name or f"Agent for {urlparse(url).netloc}",
             collection_name=collection_name
