@@ -227,16 +227,11 @@ with st.sidebar:
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs", key="new_agent_url")
         new_agent_name = st.text_input("Agent Name", placeholder="My Documentation Agent")
-        col1, col2 = st.columns(2)
-        with col1:
-            if st.button("Create Agent"):
-                if new_agent_url and new_agent_name:
-                    create_new_agent(new_agent_url, new_agent_name)
-                else:
-                    st.warning("Please provide both a URL and a name for the agent.")
-        with col2:
-            if st.button("Add Skills"):
-                st.info("Alert created")
+        if st.button("Create Agent"):
+            if new_agent_url and new_agent_name:
+                create_new_agent(new_agent_url, new_agent_name)
+            else:
+                st.warning("Please provide both a URL and a name for the agent.")
 
     st.subheader("Your Agents")
     agents = st.session_state.agent_manager.list_agents()
