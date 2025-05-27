@@ -221,9 +221,6 @@ with st.sidebar:
     show_ranking = st.checkbox("Show document ranking scores", value=st.session_state["show_ranking"])
     st.session_state["show_ranking"] = show_ranking
 
-    # Add option to show unified view
-    show_unified_view = st.checkbox("Show Jobs & Skills View", value=False)
-
     with st.expander("Create New Agent", expanded=True):
         new_agent_url = st.text_input("Document URL", placeholder="https://example.com/docs", key="new_agent_url")
         new_agent_name = st.text_input("Agent Name", placeholder="My Documentation Agent")
@@ -290,34 +287,6 @@ if st.sidebar.checkbox("Show Sample Data", value=False):
     except Exception as e:
         st.error(f"Error loading sample data: {str(e)}")
 
-# Display the unified view if the checkbox is selected
-if show_unified_view:
-    st.subheader("Jobs & Skills View")
-    unified_data = fetch_unified_data()
-    if unified_data is not None:
-        # Add a filter for company/job name
-        if not unified_data.empty:
-            job_filter = st.selectbox(
-                "Filter by Job/Company:", 
-                options=["All"] + sorted(unified_data["job_name"].unique().tolist())
-            )
-            
-            # Apply filter if not "All"
-            if job_filter != "All":
-                filtered_df = unified_data[unified_data["job_name"] == job_filter]
-            else:
-                filtered_df = unified_data
-                
-            # Display the filtered data
-            st.dataframe(filtered_df)
-            
-            # Show a count of skills per job
-            if st.checkbox("Show Skills Count per Job"):
-                skill_counts = unified_data.groupby("job_name")["skill_name"].count().reset_index()
-                skill_counts.columns = ["Job/Company", "Number of Skills"]
-                st.bar_chart(skill_counts.set_index("Job/Company"))
-    else:
-        st.info("No unified data available or connection issue.")
 
 # Run the Streamlit app
 if __name__ == "__main__":
