@@ -20,42 +20,6 @@ st.set_page_config(
     layout="wide"
 )
 
-# Add Scale button at the top
-if st.button("Scale"):
-    url = st.session_state.get("new_agent_url", "")
-    if url:
-        with st.spinner("Scraping job data from Greenhouse..."):
-            try:
-                from greenhouse_job_scraper import GreenhouseJobScraper
-                scraper = GreenhouseJobScraper()
-                soup = scraper.fetch_page(url)
-                if soup:
-                    job_details = scraper.scrape_job_details(url)
-                    if job_details:
-                        # Convert job details to text format
-                        job_text = f"Title: {job_details.get('title', 'N/A')}\n"
-                        job_text += f"Company: {job_details.get('company', 'N/A')}\n"
-                        job_text += f"Location: {job_details.get('location', 'N/A')}\n"
-                        job_text += f"URL: {job_details.get('url', 'N/A')}\n"
-                        job_text += f"Job ID: {job_details.get('job_id', 'N/A')}\n\n"
-                        job_text += f"Description:\n{job_details.get('description', 'N/A')}"
-                        
-                        # Create a download button for the text file
-                        st.download_button(
-                            label="Download Job Data",
-                            data=job_text,
-                            file_name="greenhouse_job_data.txt",
-                            mime="text/plain"
-                        )
-                        st.success("Job data scraped successfully!")
-                    else:
-                        st.error("No job details found.")
-                else:
-                    st.error("Failed to fetch the Greenhouse job page.")
-            except Exception as e:
-                st.error(f"Error scraping job data: {str(e)}")
-    else:
-        st.warning("Please enter a URL in the 'Document URL' field below.")
 
 # Initialize session state
 if "agent_manager" not in st.session_state:
