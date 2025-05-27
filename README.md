@@ -1,5 +1,5 @@
 
-# 🤖 Raggedy, multi-agent Human resource chatbots
+# 🤖 Raggedy: Multi-Agent HR Chatbots w/RAG
 
 ## 📚 Overview
 
