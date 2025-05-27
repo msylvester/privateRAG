@@ -278,14 +278,6 @@ if st.session_state.current_agent_id:
 else:
     st.info("Select an agent from the sidebar or create a new one to start chatting.")
 
-# Sample data display (for development purposes)
-if st.sidebar.checkbox("Show Sample Data", value=False):
-    st.subheader("Sample Data Preview")
-    try:
-        sample_df = pd.read_csv("kizen_cleaned.csv")
-        st.dataframe(sample_df.head())
-    except Exception as e:
-        st.error(f"Error loading sample data: {str(e)}")
 
 
 # Run the Streamlit app
