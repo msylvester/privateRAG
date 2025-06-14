@@ -3,7 +3,7 @@
 
 ## 📚 Overview
 
-**RAG HR agents** is a Retrieval-Augmented Generation (RAG) based AI chat platform that enables users to create intelligent agents trained on custom documentation sources. These agents will be trained on a job desirption that you link in the form field for URL. Currently, HRRag only supports documents from greenhouse.
+**RAG HR agents** is a Retrieval-Augmented Generation (RAG) based AI chat platform that enables users to create intelligent agents trained on custom documentation sources. These agents will be trained on a job description that you link in the form field for URL. Currently, Raggedy 🪆 only supports documents from greenhouse.
 
 **Example of the Chatbot working**
 ![Alt text](./images/raggedy_prview.png)
